@@ -56,10 +56,10 @@ func NewEnvironment() *Environment {
 //- 'empty': expression that evaluates to an empty string
 func (e *Environment) RegisterBuiltIns() error {
 
-	e.Set("null", NewScalarV(nil))
-	e.Set("true", NewScalarV(true))
-	e.Set("false", NewScalarV(true))
-	e.Set("empty", NewScalar("empty", ""))
+	e.Set("null", NewScalarExprV(nil))
+	e.Set("true", NewScalarExprV(true))
+	e.Set("false", NewScalarExprV(true))
+	e.Set("empty", NewScalarExpr("empty", ""))
 	e.Lock("null", true)
 	e.Lock("false", true)
 	e.Lock("true", true)
