@@ -1,6 +1,7 @@
 package expr
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -12,7 +13,7 @@ import (
 * orExpr	::= 	andExpr['||' orExpr]
 * andExpr ::=	cmpExpr['&&' andExpr]
 * cmpExpr ::=     catExpr['==', catExpr]
-* catExpr ::=     atom ('+' CatExpr)*
+* concatExpr ::=     atom ('+' CatExpr)*
 * atom    ::=     (text | symbol | subexpr)
 * symbol::=	ident[funcall]['.' symbol]
 * funcall ::=	'(' [arglist] ')'
@@ -29,6 +30,16 @@ func newParser() Parser {
 	return *new(Parser)
 }
 
+func compareOp(operand string) bool {
+
+	switch operand {
+	case "==", "!=", ">=", "<=":
+		return true
+	default:
+		return false
+	}
+}
+
 //Parse creates an parser witch parser the input string
 //Remember to evaluate the returned expression in the prefered environment!
 //Enjoy!
@@ -39,16 +50,16 @@ func Parse(input string) (Expression, error) {
 
 //Parse parses the expressing from a string format
 func (p Parser) Parse(input string) (Expression, error) {
-	l := lex(false, input)
-	return parseExpr(*l)
+	l := newLexer(false, input)
+	return parseExpr(l)
 }
 
 //parseExpr parses the lexer tokens
-func parseExpr(lex lexer) (Expression, error) {
+func parseExpr(lex *lexer) (Expression, error) {
 	return parseCond(lex)
 }
 
-func parseCond(lex lexer) (Expression, error) {
+func parseCond(lex *lexer) (Expression, error) {
 
 	expr, err := parseOr(lex)
 	if err != nil {
@@ -81,7 +92,7 @@ func parseCond(lex lexer) (Expression, error) {
 }
 
 //parseOr. || Operator.
-func parseOr(lex lexer) (Expression, error) {
+func parseOr(lex *lexer) (Expression, error) {
 	expr, err := parseAnd(lex)
 	if err != nil {
 		return expr, err
@@ -92,18 +103,18 @@ func parseOr(lex lexer) (Expression, error) {
 	}
 	if t.Type == OperatorTok && t.Literal == "||" {
 		//left has precedens
-		l, err := parseOr(lex)
+		r, err := parseOr(lex)
 		if err != nil {
-			return l, err
+			return r, err
 		}
-		return NewOrExpr(expr, l), nil
+		return NewOrExpr(expr, r), nil
 	}
 	lex.PushBack(t)
 	return expr, nil
 }
 
 //parseand. && Operator.
-func parseAnd(lex lexer) (Expression, error) {
+func parseAnd(lex *lexer) (Expression, error) {
 	expr, err := parseCmp(lex)
 	if err != nil {
 		return expr, err
@@ -114,26 +125,79 @@ func parseAnd(lex lexer) (Expression, error) {
 	}
 	if t.Type == OperatorTok && t.Literal == "&&" {
 		//left has precedens
-		l, err := parseAnd(lex)
+		r, err := parseAnd(lex)
 		if err != nil {
-			return l, err
+			return r, err
 		}
-		return NewOrExpr(expr, l), nil
+		return NewAndExpr(expr, r), nil
 	}
 	lex.PushBack(t)
 	return expr, nil
 }
 
-//To be continued
-func parseCmp(lex lexer) (Expression, error) {
-	return &CondExpr{}, nil
+//parseCmp parses the compare expression
+func parseCmp(lex *lexer) (Expression, error) {
+	left, err := parseConcat(lex)
+	if err != nil {
+		return left, err
+	}
+	t, fini := lex.NextToken()
+	if fini || t.Type == EoFTok {
+		return left, nil
+	}
+	if t.Type == OperatorTok {
+		if compareOp(t.Literal) {
+			right, err := parseConcat(lex)
+			if err != nil {
+				return right, err
+			}
+			return NewCompareExpr(t.Literal, left, right), nil
+		}
+		lex.PushBack(t)
+
+	} else if t.Type == IdentTok && t.Literal == "like" {
+		right, err := parseConcat(lex)
+		if err != nil {
+			return left, err
+		}
+		return NewLikeExpr(left, right), nil
+
+	} else if t.Type == IdentTok && t.Literal == "in" {
+		right, err := parseConcat(lex)
+		if err != nil {
+			return left, err
+		}
+		return NewInExpr(left, right), nil
+	} else {
+		lex.PushBack(t)
+	}
+	return left, nil
 }
 
-func parseConcat(lex lexer) (Expression, error) {
-	return &CondExpr{}, nil
+func parseConcat(lex *lexer) (Expression, error) {
+	left, err := parseAtom(lex)
+	if err != nil {
+		return left, err
+	}
+	t, fini := lex.NextToken()
+	if fini || t.Type == EoFTok {
+		return left, nil
+	}
+	if t.Type == OperatorTok && t.Literal == "+" {
+
+		right, err := parseConcat(lex)
+		if err != nil {
+			return right, err
+		}
+		return NewConcatExpr(left, right), nil
+
+	}
+
+	lex.PushBack(t)
+	return left, nil
 }
 
-func parseAtom(lex lexer) (Expression, error) {
+func parseAtom(lex *lexer) (Expression, error) {
 
 	t, fini := lex.NextToken()
 	if fini || t.Type == EoFTok {
@@ -169,36 +233,104 @@ func parseAtom(lex lexer) (Expression, error) {
 	}
 }
 
-func parseSubExpr(lex lexer) (Expression, error) {
+//parseSubExpr parses list expression in format (expr)
+func parseSubExpr(lex *lexer) (Expression, error) {
 	return parseExpr(lex)
 }
 
-func parseListExpr(lex lexer) (Expression, error) {
-	return parseExpr(lex)
-}
-
-func parseScopedIdent(lex lexer, t Token, sy SymbolExpr) (Expression, error) {
-	return parseExpr(lex)
-}
-
-/* func ParseListExpr( lex lexer) (Expression, error){
-	ListExpr result = new ListExpr();
-	Token t = lex.Next();
-
-	while (t.T != Tokentype.EoF)
-	{
-		if (t.T == OperatorTok && t.Literal == "}")
-			return result;
-		lex.Push(t);
-		result.Append(ParseExpr(lex));
-		t = lex.Next();
-		if (t.T == OperatorTok && t.Literal == ",")
-			t = lex.Next();
+//parseListExpr parses list expression in format {expr,expr,....}
+func parseListExpr(lex *lexer) (Expression, error) {
+	result := NewListExpr()
+	t, fini := lex.NextToken()
+	if fini || t.Type == EoFTok {
+		return result, nil
 	}
-	throw new UnterminatedList();
-} */
+	for t.Type != EoFTok || fini {
+		if t.Type == OperatorTok && t.Literal == "}" {
+			return result, nil
+		}
 
-func parseIdent(lex lexer, t Token) (Expression, error) {
+		lex.PushBack(t)
+		lele, err := parseExpr(lex)
+		if err != nil {
+			return lele, err
+		}
+		result.Append(lele)
+		if t.Type == OperatorTok && t.Literal == "," {
+			t, fini = lex.NextToken()
+		}
+	}
+	return result, errors.New("List unterminated")
+}
+
+func parseScopedIdent(lex *lexer, t Token, scope *SymbolExpr) (Expression, error) {
+
+	ident := t.Literal
+	sym := NewSymbolExprWithScope(t.Literal, scope)
+	t, fini := lex.NextToken()
+	if fini || t.Type == EoFTok {
+		return sym, nil
+	}
+	if t.Type == OperatorTok && t.Literal == "." {
+
+		t, err := expect(lex, IdentTok, "")
+		if err != nil {
+
+			return sym, err
+		}
+		return parseScopedIdent(lex, t, sym)
+	}
+	if t.Type != OperatorTok || t.Literal != "(" {
+		lex.PushBack(t)
+		return sym, nil
+	}
+	f, err := NewScopedFuncCallExpr(ident, scope)
+	if err != nil {
+		return f, err
+	}
+	expectArg := true
+
+	t, fini = lex.NextToken()
+	if fini || t.Type == EoFTok {
+		return f, nil
+	}
+	for !(t.Type == OperatorTok && t.Literal == ")") {
+		lex.PushBack(t)
+		if expectArg {
+			a, err := parseExpr(lex)
+			if err != nil {
+				return a, err
+			}
+			f.AddArg(a)
+		} else {
+			expect(lex, OperatorTok, ",")
+
+		}
+		t, fini = lex.NextToken()
+		if fini || t.Type == EoFTok {
+			return sym, nil
+		}
+
+		expectArg = !expectArg
+
+	}
+	t, fini = lex.NextToken()
+	if fini || t.Type == EoFTok {
+		return sym, nil
+	}
+	if t.Type == OperatorTok && t.Literal == "." {
+
+		t, err := expect(lex, IdentTok, "")
+		if err != nil {
+
+			return sym, err
+		}
+		return parseScopedIdent(lex, t, sym)
+	}
+	return f, nil
+}
+
+func parseIdent(lex *lexer, t Token) (Expression, error) {
 
 	sym := NewSymbolExpr(t.Literal)
 	t, fini := lex.NextToken()
@@ -209,22 +341,21 @@ func parseIdent(lex lexer, t Token) (Expression, error) {
 
 		t, err := expect(lex, IdentTok, "")
 		if err != nil {
-
+			return sym, err
 		}
-
-		return parseScopedIdent(lex, t, *sym)
+		return parseScopedIdent(lex, t, sym)
 	}
 	if t.Type != OperatorTok || t.Literal != "(" {
 		lex.PushBack(t)
 		return sym, nil
 	}
-	f := FuncCallExpr{}
+	f := NewFuncCallExpr()
 	expectArg := true
 	f.SetFunc(sym)
 
 	t, fini = lex.NextToken()
 	if fini || t.Type == EoFTok {
-		return &f, nil
+		return f, nil
 	}
 	for !(t.Type == OperatorTok && t.Literal == ")") {
 		lex.PushBack(t)
@@ -245,21 +376,21 @@ func parseIdent(lex lexer, t Token) (Expression, error) {
 		expectArg = !expectArg
 
 	}
-	return &f, nil
+	return f, nil
 }
 
-func expect(lex lexer, tt TokenType, literal string) (Token, error) {
+func expect(lex *lexer, tt TokenType, literal string) (Token, error) {
 
 	t, fini := lex.NextToken()
 	if fini || t.Type == EoFTok {
 		return t, nil
 	}
 	if t.Type != tt {
-		//TODO check this!! %d not correct? String representation?
+		//TODO check this!! %v not correct? String representation?
 		return t, fmt.Errorf("Unexpected TokenType: %v", t.Type)
 	}
-	if strings.EqualFold(t.Literal, literal) {
-		return t, fmt.Errorf("Unexpected literal value: %s (expected %s )", t.Literal, literal)
+	if !strings.EqualFold(t.Literal, literal) {
+		return t, fmt.Errorf("Unexpected literal value: %s, (expected %s)", t.Literal, literal)
 	}
 	return t, nil
 }

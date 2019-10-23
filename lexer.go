@@ -27,8 +27,8 @@ type lexer struct {
 	tokenStack tokenStack
 }
 
-// NewLexer creates and returns a lexer ready to parse the given input
-func lex(includeWS bool, in string) *lexer {
+//newLexer creates and returns a lexer ready to parse the given input
+func newLexer(includeWS bool, in string) *lexer {
 	l := lexer{
 		input:      in,
 		start:      0,
@@ -94,9 +94,12 @@ func (l lexer) Current() string {
 
 // Emit will receive a token and push a new token with the current analyzed
 // value into the tokens channel.
-func (l *lexer) emit(tok Token) {
+func (l *lexer) emit(tok Token, send bool) {
 
-	l.tokens <- tok
+	if send {
+		l.tokens <- tok
+	}
+
 	l.start = l.pos
 }
 
@@ -170,7 +173,7 @@ func lexInput(l *lexer) stateFunc {
 	if strings.ContainsRune(chWHITE, r) {
 		return lexSpace(l)
 	} else if strings.ContainsRune(chIDENTSTART, r) {
-		lexIdent(l)
+		return lexIdent(l)
 	} else if strings.ContainsRune(chDIGIT, r) {
 		l.backup()
 		return lexNumber(l)
@@ -178,22 +181,23 @@ func lexInput(l *lexer) stateFunc {
 		l.backup()
 		return lexQuoted(l)
 	} else if r == eof {
-		l.emit(Token{Type: EoFTok})
+		l.emit(Token{Type: EoFTok}, true)
 		return nil
 	}
+	l.backup()
 	return lexOperator(l)
 }
 
 // lexSpace scans for space characters.
 func lexSpace(l *lexer) stateFunc {
 	l.eat(chWHITE)
-	if l.includeWS {
-		tok := Token{
-			Type:    WhitespaceTok,
-			Literal: l.Current(),
-		}
-		l.emit(tok)
+	tok := Token{
+		Type:    WhitespaceTok,
+		Literal: l.Current(),
+		Line:    l.line,
+		Start:   l.start,
 	}
+	l.emit(tok, l.includeWS)
 	return lexInput(l)
 }
 
@@ -203,8 +207,10 @@ func lexIdent(l *lexer) stateFunc {
 	tok := Token{
 		Type:    IdentTok,
 		Literal: l.Current(),
+		Line:    l.line,
+		Start:   l.start,
 	}
-	l.emit(tok)
+	l.emit(tok, true)
 	return lexInput(l)
 }
 
@@ -217,9 +223,11 @@ func lexNumber(l *lexer) stateFunc {
 	tok := Token{
 		Type:    NumberTok,
 		Literal: l.Current(),
+		Line:    l.line,
+		Start:   l.start,
 		Value:   fl,
 	}
-	l.emit(tok)
+	l.emit(tok, true)
 	return lexInput(l)
 }
 func (l *lexer) scanNumber() (interface{}, error) {
@@ -277,14 +285,17 @@ Loop:
 	tok.Literal = l.Current()
 	tok.Value = value
 	tok.Line = l.line
-	l.emit(tok)
+	tok.Start = l.start
+	l.emit(tok, true)
 	return lexInput(l)
 }
 
 // lexOperator lexes both single and dounle operands
 func lexOperator(l *lexer) stateFunc {
 	tok := Token{
-		Type: IdentTok,
+		Type:  OperatorTok,
+		Line:  l.line,
+		Start: l.start,
 	}
 	c := l.next()
 	c2 := l.next()
@@ -293,7 +304,7 @@ func lexOperator(l *lexer) stateFunc {
 		l.backup()
 		tok.Literal = string(c)
 	}
-	l.emit(tok)
+	l.emit(tok, true)
 	return lexInput(l)
 }
 
@@ -310,8 +321,9 @@ func (l *lexer) errorf(format string, args ...interface{}) stateFunc {
 		Literal: "ERROR",
 		Value:   fmt.Sprintf(format, args...),
 		Line:    l.line,
+		Start:   l.start,
 	}
-	l.emit(tok)
+	l.emit(tok, true)
 	return nil
 }
 
@@ -325,7 +337,7 @@ type Token struct {
 	Literal string
 	Value   interface{}
 	Line    int
-	Column  int
+	Start   int
 }
 
 //TokenType is the different tokentypes provided by
