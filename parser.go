@@ -8,18 +8,18 @@ import (
 
 /* Expression BNF
 * ==============
-* expr	::=	condExpr
-* condExpr::=	orExpr['?' expr ':' expr]
-* orExpr	::= 	andExpr['||' orExpr]
-* andExpr ::=	cmpExpr['&&' andExpr]
-* cmpExpr ::=     catExpr['==', catExpr]
-* concatExpr ::=     atom ('+' CatExpr)*
-* atom    ::=     (text | symbol | subexpr)
-* symbol::=	ident[funcall]['.' symbol]
-* funcall ::=	'(' [arglist] ')'
-* arglist::= expr(',' expr) *
-* subexpr::= '(' expr ')'
-* listexpr::= '{' arglist '}'
+* expr			::=		condExpr
+* condExpr		::=		orExpr['?' expr ':' expr]
+* orExpr		::= 	andExpr['||' orExpr]
+* andExpr		::=		cmpExpr['&&' andExpr]
+* cmpExpr		::=		concatExpr['==', concatExpr]
+* concatExpr	::=		atom ('+' concatExpr)*
+* atom			::=		(text | symbol | subexpr)
+* symbol		::=		ident[funcall]['.' symbol]
+* funcall		::=		'(' [arglist] ')'
+* arglist		::=		expr(',' expr) *
+* subexpr		::=		'(' expr ')'
+* listexpr		::=		'{' arglist '}'
  */
 
 //Parser parses
@@ -256,7 +256,8 @@ func parseListExpr(lex *lexer) (Expression, error) {
 			return lele, err
 		}
 		result.Append(lele)
-		if t.Type == OperatorTok && t.Literal == "," {
+		t, fini = lex.NextToken()
+		if !fini && t.Type == OperatorTok && t.Literal == "," {
 			t, fini = lex.NextToken()
 		}
 	}
