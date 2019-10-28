@@ -31,7 +31,7 @@ func RunParseStringTest(t *testing.T) {
 	RunExprTest("\"expr\" + \" \" + \"rules!\"", "expr rules!", t)
 	//TODO: This failes. Write lower level tests on lexer
 	//In Evaluates to bool
-	RunExprTest("\"lunch\" in {\"breakfast\", \"lunch\", \"dinner\", \"supper\"}", true, t)
+	RunExprTest("\"lunch\" in [\"breakfast\", \"lunch\", \"dinner\", \"supper\"]", true, t)
 }
 
 func RunStringInListTest(t *testing.T) {

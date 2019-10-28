@@ -19,7 +19,7 @@ import (
 * funcall		::=		'(' [arglist] ')'
 * arglist		::=		expr(',' expr) *
 * subexpr		::=		'(' expr ')'
-* listexpr		::=		'{' arglist '}'
+* arrayexpr		::=		'[' arglist ']'
  */
 
 //Parser parses
@@ -220,9 +220,9 @@ func parseAtom(lex *lexer) (Expression, error) {
 				return sub, err
 			}
 			return sub, nil
-		case "{":
-			return parseListExpr(lex)
-		//case "[":
+		case "[":
+			return parseArrayExpr(lex)
+		//case "{":
 		//    expr = parseStruct(lex);
 		//    break;
 		default:
@@ -238,15 +238,15 @@ func parseSubExpr(lex *lexer) (Expression, error) {
 	return parseExpr(lex)
 }
 
-//parseListExpr parses list expression in format {expr,expr,....}
-func parseListExpr(lex *lexer) (Expression, error) {
+//parseArrayExpr parses list expression in format {expr,expr,....}
+func parseArrayExpr(lex *lexer) (Expression, error) {
 	result := NewListExpr()
 	t, fini := lex.NextToken()
 	if fini || t.Type == EoFTok {
 		return result, nil
 	}
 	for t.Type != EoFTok || fini {
-		if t.Type == OperatorTok && t.Literal == "}" {
+		if t.Type == OperatorTok && t.Literal == "]" {
 			return result, nil
 		}
 

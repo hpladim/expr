@@ -42,7 +42,7 @@ func exprTestM(str string, expectedValue interface{}) {
 
 func main() {
 	//exprTestM("\"expr\" + \" \" + \"rules!\"", "expr rules!")
-	exprTestM("\"lunch\" in {\"breakfast\", \"lunch\", \"dinner\",\"supper\"}", true)
+	exprTestM("\"lunch\" in [\"breakfast\", \"lunch\", \"dinner\",\"supper\"}", true)
 	//exprTestM("\"lunch\"", "lunch")
 
 	/*	exprTestM("true && (true && true)", true)
