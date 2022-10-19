@@ -313,7 +313,7 @@ func (e *CompareExpr) Evaluate(env *Environment) (Expression, error) {
 	ls, lok := l.(*ScalarExpr)
 	rs, rok := r.(*ScalarExpr)
 	if lok && rok {
-		return compare(env, e.operand, *ls, *rs)
+		return compare(env, e.operand, ls, rs)
 	}
 	return nil, errors.New("Equality-operator is only supported on Scalar values")
 }
@@ -601,7 +601,7 @@ func (e *LikeExpr) String() string {
 
 //=============================================================================
 
-//FuncCallExpr is a expression holding a function an its arguments
+//FuncCallExpr is a expression holding a function and its arguments
 //Fantastic stuff
 type FuncCallExpr struct {
 	function Expression

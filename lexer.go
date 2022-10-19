@@ -99,7 +99,6 @@ func (l *lexer) emit(tok Token, send bool) {
 	if send {
 		l.tokens <- tok
 	}
-
 	l.start = l.pos
 }
 

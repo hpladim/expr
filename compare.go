@@ -6,7 +6,7 @@ import (
 
 //Extensive compare of scalar values
 //Will do a compare of the scalareExpr supporting the following operands: '==', '!=', '>=','>','<=','<'
-func compare(env *Environment, operand string, l ScalarExpr, r ScalarExpr) (Expression, error) {
+func compare(env *Environment, operand string, l *ScalarExpr, r *ScalarExpr) (Expression, error) {
 
 	if r.Value() == nil || r.Value() == env.Null() || l.Value() == nil || l.Value() == env.Null() {
 		return env.False(), nil
