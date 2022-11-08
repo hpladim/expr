@@ -22,7 +22,7 @@ import (
 * arrayexpr		::=		'[' arglist ']'
  */
 
-//Parser parses
+// Parser parses
 type Parser struct {
 }
 
@@ -40,21 +40,21 @@ func compareOp(operand string) bool {
 	}
 }
 
-//Parse creates an parser witch parser the input string
-//Remember to evaluate the returned expression in the prefered environment!
-//Enjoy!
+// Parse creates an parser which parser the input string
+// Remember to evaluate the returned expression in the prefered environment!
+// Enjoy!
 func Parse(input string) (Expression, error) {
 	p := newParser()
 	return p.Parse(input)
 }
 
-//Parse parses the expressing from a string format
+// Parse parses the expressing from a string format
 func (p Parser) Parse(input string) (Expression, error) {
 	l := newLexer(false, input)
 	return parseExpr(l)
 }
 
-//parseExpr parses the lexer tokens
+// parseExpr parses the lexer tokens
 func parseExpr(lex *lexer) (Expression, error) {
 	return parseCond(lex)
 }
@@ -91,7 +91,7 @@ func parseCond(lex *lexer) (Expression, error) {
 	return expr, nil
 }
 
-//parseOr. || Operator.
+// parseOr. || Operator.
 func parseOr(lex *lexer) (Expression, error) {
 	expr, err := parseAnd(lex)
 	if err != nil {
@@ -113,7 +113,7 @@ func parseOr(lex *lexer) (Expression, error) {
 	return expr, nil
 }
 
-//parseand. && Operator.
+// parseand. && Operator.
 func parseAnd(lex *lexer) (Expression, error) {
 	expr, err := parseCmp(lex)
 	if err != nil {
@@ -135,7 +135,7 @@ func parseAnd(lex *lexer) (Expression, error) {
 	return expr, nil
 }
 
-//parseCmp parses the compare expression
+// parseCmp parses the compare expression
 func parseCmp(lex *lexer) (Expression, error) {
 	left, err := parseConcat(lex)
 	if err != nil {
@@ -226,19 +226,19 @@ func parseAtom(lex *lexer) (Expression, error) {
 		//    expr = parseStruct(lex);
 		//    break;
 		default:
-			return nil, fmt.Errorf("Unexpected operator when expecting expression term: %s", t.Literal)
+			return nil, fmt.Errorf("unexpected operator when expecting expression term: %s", t.Literal)
 		}
 	default:
-		return nil, fmt.Errorf("Unexpected token type when expecting expression term: %v '%s'", t.Type, t.Literal)
+		return nil, fmt.Errorf("unexpected token type when expecting expression term: %v '%s'", t.Type, t.Literal)
 	}
 }
 
-//parseSubExpr parses list expression in format (expr)
+// parseSubExpr parses list expression in format (expr)
 func parseSubExpr(lex *lexer) (Expression, error) {
 	return parseExpr(lex)
 }
 
-//parseArrayExpr parses list expression in format {expr,expr,....}
+// parseArrayExpr parses list expression in format {expr,expr,....}
 func parseArrayExpr(lex *lexer) (Expression, error) {
 	result := NewListExpr()
 	t, fini := lex.NextToken()
@@ -261,7 +261,7 @@ func parseArrayExpr(lex *lexer) (Expression, error) {
 			t, fini = lex.NextToken()
 		}
 	}
-	return result, errors.New("List unterminated")
+	return result, errors.New("list is un-terminated")
 }
 
 func parseScopedIdent(lex *lexer, t Token, scope *SymbolExpr) (Expression, error) {
@@ -388,10 +388,10 @@ func expect(lex *lexer, tt TokenType, literal string) (Token, error) {
 	}
 	if t.Type != tt {
 		//TODO check this!! %v not correct? String representation?
-		return t, fmt.Errorf("Unexpected TokenType: %v", t.Type)
+		return t, fmt.Errorf("unexpected TokenType: %v", t.Type)
 	}
 	if !strings.EqualFold(t.Literal, literal) {
-		return t, fmt.Errorf("Unexpected literal value: %s, (expected %s)", t.Literal, literal)
+		return t, fmt.Errorf("unexpected literal value: %s, (expected %s)", t.Literal, literal)
 	}
 	return t, nil
 }

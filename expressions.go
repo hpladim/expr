@@ -7,7 +7,7 @@ import (
 	"unicode"
 )
 
-//Expression is the generic expression for all expression types in the expression framework
+// Expression is the generic expression for all expression types in the expression framework
 type Expression interface {
 	//Evaluate the expression
 	Evaluate(env *Environment) (Expression, error)
@@ -19,7 +19,7 @@ type Expression interface {
 	String() string
 }
 
-//Function is the more specific
+// Function is the more specific
 type Function interface {
 	Expression
 	Invoke(env *Environment, args []Expression) (Expression, error)
@@ -27,21 +27,21 @@ type Function interface {
 
 //=============================================================================
 
-//SymbolExpr is  used for attaching functions to extend the Environment
-//Symbols can even be registered in a scope!
+// SymbolExpr is  used for attaching functions to extend the Environment
+// Symbols can even be registered in a scope!
 type SymbolExpr struct {
 	name  string
 	scope *SymbolExpr
 }
 
-//NewSymbolExpr registers a new symbol with the provided name
+// NewSymbolExpr registers a new symbol with the provided name
 func NewSymbolExpr(name string) *SymbolExpr {
 	sy := SymbolExpr{}
 	sy.name = name
 	return &sy
 }
 
-//NewSymbolExprWithScope registers a new symbol with the provided name
+// NewSymbolExprWithScope registers a new symbol with the provided name
 func NewSymbolExprWithScope(name string, scope *SymbolExpr) *SymbolExpr {
 	sy := SymbolExpr{}
 	sy.name = name
@@ -49,12 +49,12 @@ func NewSymbolExprWithScope(name string, scope *SymbolExpr) *SymbolExpr {
 	return &sy
 }
 
-//Evaluate the expression
+// Evaluate the expression
 func (e *SymbolExpr) Evaluate(env *Environment) (Expression, error) {
 	return env.Get(e.Literal()), nil
 }
 
-//Literal will provide a uniqe literal for the expression
+// Literal will provide a uniqe literal for the expression
 func (e *SymbolExpr) Literal() string {
 	if e.scope != nil {
 		return e.scope.Literal() + "." + e.name
@@ -62,25 +62,25 @@ func (e *SymbolExpr) Literal() string {
 	return e.name
 }
 
-//Value will provide value after evaluation
+// Value will provide value after evaluation
 func (e *SymbolExpr) Value() interface{} {
 	return fmt.Sprintf("[:%T:]", e)
 }
 
-//String will provide the string representation of value
+// String will provide the string representation of value
 func (e *SymbolExpr) String() string {
 	return fmt.Sprintf("%T", e)
 }
 
 //=============================================================================
 
-//ScalarExpr is a basic scalar expression
+// ScalarExpr is a basic scalar expression
 type ScalarExpr struct {
 	literal string
 	value   interface{}
 }
 
-//NewScalarExpr registers a new scalar with the defined literal and value
+// NewScalarExpr registers a new scalar with the defined literal and value
 func NewScalarExpr(literal string, value interface{}) *ScalarExpr {
 	sc := ScalarExpr{}
 	sc.value = value
@@ -88,7 +88,7 @@ func NewScalarExpr(literal string, value interface{}) *ScalarExpr {
 	return &sc
 }
 
-//NewScalarExprV registers a new scalar and creates and literal based on the value
+// NewScalarExprV registers a new scalar and creates and literal based on the value
 func NewScalarExprV(value interface{}) *ScalarExpr {
 	sc := ScalarExpr{}
 	sc.value = value
@@ -109,22 +109,22 @@ func escape(s string) string {
 	return strings.ReplaceAll(strings.ReplaceAll(s, "\\", "\\\\"), "\"", "\\\"")
 }
 
-//Evaluate the expression
+// Evaluate the expression
 func (e *ScalarExpr) Evaluate(env *Environment) (Expression, error) {
 	return e, nil
 }
 
-//Literal will provide a uniqe literal for the expression
+// Literal will provide a uniqe literal for the expression
 func (e *ScalarExpr) Literal() string {
 	return e.literal
 }
 
-//Value will provide value after evaluation
+// Value will provide value after evaluation
 func (e *ScalarExpr) Value() interface{} {
 	return e.value
 }
 
-//String will provide the string representation of value
+// String will provide the string representation of value
 func (e *ScalarExpr) String() string {
 	if e.value != nil {
 		return fmt.Sprintf("%v", e.value)
@@ -134,14 +134,14 @@ func (e *ScalarExpr) String() string {
 
 //=============================================================================
 
-//CondExpr is a conditional expression on the form cond? left: right
+// CondExpr is a conditional expression on the form cond? left: right
 type CondExpr struct {
 	condition Expression
 	left      Expression
 	right     Expression
 }
 
-//NewCondExpr registers a new conditional expression on the form cond?left:right
+// NewCondExpr registers a new conditional expression on the form cond?left:right
 func NewCondExpr(cond Expression, left Expression, right Expression) *CondExpr {
 	e := CondExpr{}
 	e.condition = cond
@@ -150,7 +150,7 @@ func NewCondExpr(cond Expression, left Expression, right Expression) *CondExpr {
 	return &e
 }
 
-//Evaluate the expression
+// Evaluate the expression
 func (e *CondExpr) Evaluate(env *Environment) (Expression, error) {
 	c, err := e.condition.Evaluate(env)
 	if err != nil {
@@ -162,30 +162,30 @@ func (e *CondExpr) Evaluate(env *Environment) (Expression, error) {
 	return e.right.Evaluate(env)
 }
 
-//Literal will provide a uniqe literal for the expression
+// Literal will provide a uniqe literal for the expression
 func (e *CondExpr) Literal() string {
 	return fmt.Sprintf("(%s?%s:%s)", e.condition.Literal(), e.left.Literal(), e.right.Literal())
 }
 
-//Value will provide value after evaluation
+// Value will provide value after evaluation
 func (e *CondExpr) Value() interface{} {
 	return fmt.Sprintf("[:%T:]", e)
 }
 
-//String will provide the string representation of value
+// String will provide the string representation of value
 func (e *CondExpr) String() string {
 	return fmt.Sprintf("%T", e)
 }
 
 //=============================================================================
 
-//OrExpr is a basic binary expression(||)
+// OrExpr is a basic binary expression(||)
 type OrExpr struct {
 	left  Expression
 	right Expression
 }
 
-//NewOrExpr registers a new conditional expression on the form left||right
+// NewOrExpr registers a new conditional expression on the form left||right
 func NewOrExpr(left Expression, right Expression) *OrExpr {
 	e := OrExpr{}
 	e.left = left
@@ -193,7 +193,7 @@ func NewOrExpr(left Expression, right Expression) *OrExpr {
 	return &e
 }
 
-//Evaluate the expression
+// Evaluate the expression
 func (e *OrExpr) Evaluate(env *Environment) (Expression, error) {
 	c, err := e.left.Evaluate(env)
 	if err != nil {
@@ -212,30 +212,30 @@ func (e *OrExpr) Evaluate(env *Environment) (Expression, error) {
 	return env.False(), nil
 }
 
-//Literal will provide a uniqe literal for the expression
+// Literal will provide a uniqe literal for the expression
 func (e *OrExpr) Literal() string {
 	return fmt.Sprintf("(%s || %s)", e.left.Literal(), e.right.Literal())
 }
 
-//Value will provide value after evaluation
+// Value will provide value after evaluation
 func (e *OrExpr) Value() interface{} {
 	return fmt.Sprintf("[:%T:]", e)
 }
 
-//String will provide the string representation of value
+// String will provide the string representation of value
 func (e *OrExpr) String() string {
 	return fmt.Sprintf("%T", e)
 }
 
 //=============================================================================
 
-//AndExpr is a basic binary expression(&&)
+// AndExpr is a basic binary expression(&&)
 type AndExpr struct {
 	left  Expression
 	right Expression
 }
 
-//NewAndExpr registers a new conditional expression on the form left||right
+// NewAndExpr registers a new conditional expression on the form left||right
 func NewAndExpr(left Expression, right Expression) *AndExpr {
 	e := AndExpr{}
 	e.left = left
@@ -243,7 +243,7 @@ func NewAndExpr(left Expression, right Expression) *AndExpr {
 	return &e
 }
 
-//Evaluate the expression
+// Evaluate the expression
 func (e *AndExpr) Evaluate(env *Environment) (Expression, error) {
 	c, err := e.left.Evaluate(env)
 	if err != nil {
@@ -262,24 +262,24 @@ func (e *AndExpr) Evaluate(env *Environment) (Expression, error) {
 	return env.True(), nil
 }
 
-//Literal will provide a uniqe literal for the expression
+// Literal will provide a uniqe literal for the expression
 func (e *AndExpr) Literal() string {
 	return fmt.Sprintf("(%s && %s)", e.left.Literal(), e.right.Literal())
 }
 
-//Value will provide value after evaluation
+// Value will provide value after evaluation
 func (e *AndExpr) Value() interface{} {
 	return fmt.Sprintf("[:%T:]", e)
 }
 
-//String will provide the string representation of value
+// String will provide the string representation of value
 func (e *AndExpr) String() string {
 	return fmt.Sprintf("%T", e)
 }
 
 //=============================================================================
 
-//CompareExpr is a basic compare expression handling the following compare operands:
+// CompareExpr is a basic compare expression handling the following compare operands:
 // '==', '!=', '>=','>','<=','<'
 // only scalar expression with same value type is compared
 type CompareExpr struct {
@@ -288,7 +288,7 @@ type CompareExpr struct {
 	right   Expression
 }
 
-//NewCompareExpr registers a new compare expression on the form left comparator right
+// NewCompareExpr registers a new compare expression on the form left comparator right
 func NewCompareExpr(operand string, left Expression, right Expression) *CompareExpr {
 	e := CompareExpr{}
 	e.operand = operand
@@ -298,8 +298,8 @@ func NewCompareExpr(operand string, left Expression, right Expression) *CompareE
 	return &e
 }
 
-//Evaluate the expression, will do a compare supporting the following operands: '==', '!=', '>=','>','<=','<'
-//Only scalar expression with same value type is compared
+// Evaluate the expression, will do a compare supporting the following operands: '==', '!=', '>=','>','<=','<'
+// Only scalar expression with same value type is compared
 func (e *CompareExpr) Evaluate(env *Environment) (Expression, error) {
 
 	l, err := e.left.Evaluate(env)
@@ -315,33 +315,33 @@ func (e *CompareExpr) Evaluate(env *Environment) (Expression, error) {
 	if lok && rok {
 		return compare(env, e.operand, ls, rs)
 	}
-	return nil, errors.New("Equality-operator is only supported on Scalar values")
+	return nil, errors.New("equality-operator is only supported on Scalar values")
 }
 
-//Literal will provide a uniqe literal for the expression
+// Literal will provide a uniqe literal for the expression
 func (e *CompareExpr) Literal() string {
 	return fmt.Sprintf("(%s %s %s)", e.left.Literal(), e.operand, e.right.Literal())
 }
 
-//Value will provide value after evaluation
+// Value will provide value after evaluation
 func (e *CompareExpr) Value() interface{} {
 	return fmt.Sprintf("[:%T:]", e)
 }
 
-//String will provide the string representation of value
+// String will provide the string representation of value
 func (e *CompareExpr) String() string {
 	return fmt.Sprintf("%T", e)
 }
 
 //=============================================================================
 
-//ConCatExpr is a basic concatenation expression
+// ConCatExpr is a basic concatenation expression
 type ConCatExpr struct {
 	left  Expression
 	right Expression
 }
 
-//NewConcatExpr registers a new concatenation expression on the form left + right
+// NewConcatExpr registers a new concatenation expression on the form left + right
 func NewConcatExpr(left Expression, right Expression) *ConCatExpr {
 	e := ConCatExpr{}
 	e.left = left
@@ -349,7 +349,7 @@ func NewConcatExpr(left Expression, right Expression) *ConCatExpr {
 	return &e
 }
 
-//Evaluate the expression
+// Evaluate the expression
 func (e *ConCatExpr) Evaluate(env *Environment) (Expression, error) {
 	l, err := e.left.Evaluate(env)
 	if err != nil {
@@ -374,53 +374,53 @@ func (e *ConCatExpr) Evaluate(env *Environment) (Expression, error) {
 	return NewScalarExpr("", l.String()+r.String()), nil
 }
 
-//Literal will provide a uniqe literal for the expression
+// Literal will provide a uniqe literal for the expression
 func (e *ConCatExpr) Literal() string {
 	return fmt.Sprintf("(%s%s)", e.left.Literal(), e.right.Literal())
 }
 
-//Value will provide value after evaluation
+// Value will provide value after evaluation
 func (e *ConCatExpr) Value() interface{} {
 	return fmt.Sprintf("[:%T:]", e)
 }
 
-//String will provide the string representation of value
+// String will provide the string representation of value
 func (e *ConCatExpr) String() string {
 	return fmt.Sprintf("%T", e)
 }
 
 //=============================================================================
 
-//ListExpr is a epression for list definitions
+// ListExpr is a epression for list definitions
 type ListExpr struct {
 	exprs []Expression
 }
 
-//NewListExpr registers a new list expression in form [expr,....]
-//Neat?
+// NewListExpr registers a new list expression in form [expr,....]
+// Neat?
 func NewListExpr() *ListExpr {
 	e := ListExpr{}
 	e.exprs = make([]Expression, 0)
 	return &e
 }
 
-//Append add one expression to end of expression list(slice)
+// Append add one expression to end of expression list(slice)
 func (e *ListExpr) Append(expr Expression) {
 	e.exprs = append(e.exprs, expr)
 }
 
-//Count return length of expression list(slice)
+// Count return length of expression list(slice)
 func (e *ListExpr) Count() int {
 	return len(e.exprs)
 }
 
-//Get the expression at index, careful! Preferrably used together with Count()
+// Get the expression at index, careful! Preferrably used together with Count()
 // Does not check for out of bound referencing
 func (e *ListExpr) Get(idx int) Expression {
 	return e.exprs[idx]
 }
 
-//Evaluate the expression
+// Evaluate the expression
 func (e *ListExpr) Evaluate(env *Environment) (Expression, error) {
 	expr := NewListExpr()
 	for _, ex := range e.exprs {
@@ -434,7 +434,7 @@ func (e *ListExpr) Evaluate(env *Environment) (Expression, error) {
 
 }
 
-//Literal will provide a uniqe literal for the expression
+// Literal will provide a uniqe literal for the expression
 func (e *ListExpr) Literal() string {
 	var sb strings.Builder
 	prefix := "{"
@@ -446,26 +446,26 @@ func (e *ListExpr) Literal() string {
 	return sb.String()
 }
 
-//Value will provide value after evaluation
+// Value will provide value after evaluation
 func (e *ListExpr) Value() interface{} {
 	return e
 }
 
-//String will provide the string representation of value
+// String will provide the string representation of value
 func (e *ListExpr) String() string {
 	return fmt.Sprintf("%T", e)
 }
 
 //=============================================================================
 
-//InExpr is a expression for list definitions
+// InExpr is a expression for list definitions
 type InExpr struct {
 	left  Expression
 	right Expression
 }
 
-//NewInExpr registers a new list expression in form: left in [expr...]
-//Neat?
+// NewInExpr registers a new list expression in form: left in [expr...]
+// Neat?
 func NewInExpr(left Expression, right Expression) *InExpr {
 	e := InExpr{}
 	e.left = left
@@ -473,7 +473,7 @@ func NewInExpr(left Expression, right Expression) *InExpr {
 	return &e
 }
 
-//Evaluate the expression
+// Evaluate the expression
 func (e *InExpr) Evaluate(env *Environment) (Expression, error) {
 	val, err := e.left.Evaluate(env)
 	if err != nil {
@@ -485,7 +485,7 @@ func (e *InExpr) Evaluate(env *Environment) (Expression, error) {
 	}
 	listex, ok := list.(*ListExpr)
 	if !ok {
-		return list, fmt.Errorf("Not a List for matching values: %s", e.Literal())
+		return list, fmt.Errorf("not a list for matching values: %s", e.Literal())
 	}
 	str := fmt.Sprintf("%v", val.Value())
 	for _, ex := range listex.exprs {
@@ -496,30 +496,30 @@ func (e *InExpr) Evaluate(env *Environment) (Expression, error) {
 	return env.False(), nil
 }
 
-//Literal will provide a uniqe literal for the expression
+// Literal will provide a uniqe literal for the expression
 func (e *InExpr) Literal() string {
 	return fmt.Sprintf("(%s in %s)", e.left.Literal(), e.right.Literal())
 }
 
-//Value will provide value after evaluation
+// Value will provide value after evaluation
 func (e *InExpr) Value() interface{} {
 	return fmt.Sprintf("[:%T:]", e)
 }
 
-//String will provide the string representation of value
+// String will provide the string representation of value
 func (e *InExpr) String() string {
 	return fmt.Sprintf("%T", e)
 }
 
 //=============================================================================
 
-//LikeExpr is a basic binary expression(&&)
+// LikeExpr is a basic binary expression(&&)
 type LikeExpr struct {
 	left  Expression
 	right Expression
 }
 
-//NewLikeExpr registers a new conditional expression on the left like right
+// NewLikeExpr registers a new conditional expression on the left like right
 func NewLikeExpr(left Expression, right Expression) *LikeExpr {
 	e := LikeExpr{}
 	e.left = left
@@ -527,7 +527,7 @@ func NewLikeExpr(left Expression, right Expression) *LikeExpr {
 	return &e
 }
 
-//Evaluate the expression
+// Evaluate the expression
 func (e *LikeExpr) Evaluate(env *Environment) (Expression, error) {
 	l, err := e.left.Evaluate(env)
 	if err != nil {
@@ -545,12 +545,12 @@ func (e *LikeExpr) Evaluate(env *Environment) (Expression, error) {
 	return env.False(), nil
 }
 
-//Match checks for wildcard match in string
+// Match checks for wildcard match in string
 func Match(txt string, pattern string) bool {
 	return MatchI(txt, 0, pattern, 0)
 }
 
-//MatchI checks for wildcard match in string at index
+// MatchI checks for wildcard match in string at index
 func MatchI(txt string, ti int, pattern string, pi int) bool {
 	tl := len(txt)
 	pl := len(pattern)
@@ -584,58 +584,58 @@ func MatchI(txt string, ti int, pattern string, pi int) bool {
 	return (ti == tl && (pi == pl || (pi == pl-1 && pattern[pi] == '*')))
 }
 
-//Literal will provide a uniqe literal for the expression
+// Literal will provide a uniqe literal for the expression
 func (e *LikeExpr) Literal() string {
 	return fmt.Sprintf("(%s && %s)", e.left.Literal(), e.right.Literal())
 }
 
-//Value will provide value after evaluation
+// Value will provide value after evaluation
 func (e *LikeExpr) Value() interface{} {
 	return fmt.Sprintf("[:%T:]", e)
 }
 
-//String will provide the string representation of value
+// String will provide the string representation of value
 func (e *LikeExpr) String() string {
 	return fmt.Sprintf("%T", e)
 }
 
 //=============================================================================
 
-//FuncCallExpr is a expression holding a function and its arguments
-//Fantastic stuff
+// FuncCallExpr is a expression holding a function and its arguments
+// Fantastic stuff
 type FuncCallExpr struct {
 	function Expression
 	args     []Expression
 }
 
-//NewFuncCallExpr registers a new concatenation expression on the form left + right
+// NewFuncCallExpr registers a new concatenation expression on the form left + right
 func NewFuncCallExpr() *FuncCallExpr {
 	e := FuncCallExpr{}
 	e.args = make([]Expression, 0)
 	return &e
 }
 
-//SetFunc sets the contained function in FuncExpr
+// SetFunc sets the contained function in FuncExpr
 func (e *FuncCallExpr) SetFunc(expr Expression) {
 	e.function = expr
 }
 
-//GetFunc gets the contained function in FuncExpr
+// GetFunc gets the contained function in FuncExpr
 func (e *FuncCallExpr) GetFunc() Expression {
 	return e.function
 }
 
-//AddArg adds argument to function
+// AddArg adds argument to function
 func (e *FuncCallExpr) AddArg(expr Expression) {
 	e.args = append(e.args, expr)
 }
 
-//GetArgs returns all the registered args on the function
+// GetArgs returns all the registered args on the function
 func (e *FuncCallExpr) GetArgs() []Expression {
 	return e.args
 }
 
-//Evaluate the expression
+// Evaluate the expression
 func (e *FuncCallExpr) Evaluate(env *Environment) (Expression, error) {
 	args := make([]Expression, len(e.GetArgs()))
 	f, err := e.GetFunc().Evaluate(env)
@@ -657,42 +657,42 @@ func (e *FuncCallExpr) Evaluate(env *Environment) (Expression, error) {
 
 	}
 
-	return f, fmt.Errorf("Not a function: %s", e.function.Literal())
+	return f, fmt.Errorf("not a function: %s", e.function.Literal())
 
 }
 
-//Literal will provide a uniqe literal for the expression
+// Literal will provide a uniqe literal for the expression
 func (e *FuncCallExpr) Literal() string {
 	return fmt.Sprintf("(#invoke-function:%s#)", e.function.Literal())
 }
 
-//Value will provide value after evaluation
+// Value will provide value after evaluation
 func (e *FuncCallExpr) Value() interface{} {
 	return fmt.Sprintf("[:%T:]", e)
 }
 
-//String will provide the string representation of value
+// String will provide the string representation of value
 func (e *FuncCallExpr) String() string {
 	return fmt.Sprintf("%T", e)
 }
 
 //=============================================================================
 
-//ScopedFuncCallExpr is a expression holding a scoped function and its arguments
-//Fantastic stuff
+// ScopedFuncCallExpr is a expression holding a scoped function and its arguments
+// Fantastic stuff
 type ScopedFuncCallExpr struct {
 	name  string
 	scope Expression
 	args  []Expression
 }
 
-//NewScopedFuncCallExpr registers a new scoped function in the form symbol.symbol(args)
+// NewScopedFuncCallExpr registers a new scoped function in the form symbol.symbol(args)
 func NewScopedFuncCallExpr(name string, scope Expression) (*ScopedFuncCallExpr, error) {
 	//TODO: What happens if scope is nil?
 	_, sok := scope.(*SymbolExpr)
 	_, sfok := scope.(*ScopedFuncCallExpr)
 	if !(sok || sfok) {
-		return nil, errors.New("The provided scope must be a symbol or scoped function")
+		return nil, errors.New("the provided scope must be a symbol or scoped function")
 	}
 	e := ScopedFuncCallExpr{}
 	e.name = name
@@ -701,17 +701,17 @@ func NewScopedFuncCallExpr(name string, scope Expression) (*ScopedFuncCallExpr, 
 	return &e, nil
 }
 
-//AddArg adds argument to function
+// AddArg adds argument to function
 func (e *ScopedFuncCallExpr) AddArg(expr Expression) {
 	e.args = append(e.args, expr)
 }
 
-//GetArgs returns all the registered args on the function
+// GetArgs returns all the registered args on the function
 func (e *ScopedFuncCallExpr) GetArgs() []Expression {
 	return e.args
 }
 
-//Evaluate the expression
+// Evaluate the expression
 func (e *ScopedFuncCallExpr) Evaluate(env *Environment) (Expression, error) {
 
 	args := make([]Expression, len(e.GetArgs()))
@@ -741,11 +741,11 @@ func (e *ScopedFuncCallExpr) Evaluate(env *Environment) (Expression, error) {
 
 	}
 
-	return f, fmt.Errorf("Not a function: %s", f.Literal())
+	return f, fmt.Errorf("not a function: %s", f.Literal())
 
 }
 
-//Literal will provide a uniqe literal for the expression
+// Literal will provide a uniqe literal for the expression
 func (e *ScopedFuncCallExpr) Literal() string {
 	_, sok := e.scope.(*SymbolExpr)
 	if sok {
@@ -754,30 +754,30 @@ func (e *ScopedFuncCallExpr) Literal() string {
 	return e.scope.Literal() + "." + e.name
 }
 
-//Value will provide value after evaluation
+// Value will provide value after evaluation
 func (e *ScopedFuncCallExpr) Value() interface{} {
 	return fmt.Sprintf("[:%T:]", e)
 }
 
-//String will provide the string representation of value
+// String will provide the string representation of value
 func (e *ScopedFuncCallExpr) String() string {
 	return fmt.Sprintf("%T", e)
 }
 
 //=============================================================================
 
-//NativeCallBack is the hook for native functions in the environment
-//Used for extending the environment with new functions
+// NativeCallBack is the hook for native functions in the environment
+// Used for extending the environment with new functions
 type NativeCallBack func(env *Environment, args []Expression) (Expression, error)
 
-//NativeFunctionExpr is a expression holding a native! function and its arguments
-//Fantastic stuff
+// NativeFunctionExpr is a expression holding a native! function and its arguments
+// Fantastic stuff
 type NativeFunctionExpr struct {
 	name   string
 	native NativeCallBack
 }
 
-//NewNativeFunctionExpr registers a native function in the form symbol.symbol(args)
+// NewNativeFunctionExpr registers a native function in the form symbol.symbol(args)
 func NewNativeFunctionExpr(name string, native NativeCallBack) *NativeFunctionExpr {
 	e := NativeFunctionExpr{}
 	e.name = name
@@ -785,42 +785,42 @@ func NewNativeFunctionExpr(name string, native NativeCallBack) *NativeFunctionEx
 	return &e
 }
 
-//Invoke for implementation of function interface
+// Invoke for implementation of function interface
 func (e *NativeFunctionExpr) Invoke(env *Environment, args []Expression) (Expression, error) {
 	return e.native(env, args)
 }
 
-//Evaluate the expression
+// Evaluate the expression
 func (e *NativeFunctionExpr) Evaluate(env *Environment) (Expression, error) {
 	return e, nil
 }
 
-//Literal will provide a uniqe literal for the expression
+// Literal will provide a uniqe literal for the expression
 func (e *NativeFunctionExpr) Literal() string {
 	return fmt.Sprintf("(#native-function:%s#)", e.name)
 }
 
-//Value will provide value after evaluation
+// Value will provide value after evaluation
 func (e *NativeFunctionExpr) Value() interface{} {
 	return fmt.Sprintf("[:%T:]", e)
 }
 
-//String will provide the string representation of value
+// String will provide the string representation of value
 func (e *NativeFunctionExpr) String() string {
 	return fmt.Sprintf("%T", e)
 }
 
 //=============================================================================
 
-//ScopedNativeFunctionExpr is a expression holding a scoped native! function and its arguments
-//Fantastic stuff!
+// ScopedNativeFunctionExpr is a expression holding a scoped native! function and its arguments
+// Fantastic stuff!
 type ScopedNativeFunctionExpr struct {
 	name   string
 	scope  Expression
 	native NativeCallBack
 }
 
-//NewScopedNativeFunctionExpr registers a native function in the form symbol.symbol(args)
+// NewScopedNativeFunctionExpr registers a native function in the form symbol.symbol(args)
 func NewScopedNativeFunctionExpr(name string, scope Expression, native NativeCallBack) *ScopedNativeFunctionExpr {
 	e := ScopedNativeFunctionExpr{}
 	e.name = name
@@ -829,27 +829,27 @@ func NewScopedNativeFunctionExpr(name string, scope Expression, native NativeCal
 	return &e
 }
 
-//Invoke for implementation of function interface
+// Invoke for implementation of function interface
 func (e *ScopedNativeFunctionExpr) Invoke(env *Environment, args []Expression) (Expression, error) {
 	return e.native(env, args)
 }
 
-//Evaluate the expression
+// Evaluate the expression
 func (e *ScopedNativeFunctionExpr) Evaluate(env *Environment) (Expression, error) {
 	return e, nil
 }
 
-//Literal will provide a uniqe literal for the expression
+// Literal will provide a uniqe literal for the expression
 func (e *ScopedNativeFunctionExpr) Literal() string {
 	return fmt.Sprintf("(#native-function:%s#)", e.name)
 }
 
-//Value will provide value after evaluation
+// Value will provide value after evaluation
 func (e *ScopedNativeFunctionExpr) Value() interface{} {
 	return fmt.Sprintf("[:%T:]", e)
 }
 
-//String will provide the string representation of value
+// String will provide the string representation of value
 func (e *ScopedNativeFunctionExpr) String() string {
 	return fmt.Sprintf("%T", e)
 }

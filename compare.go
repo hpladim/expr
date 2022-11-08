@@ -4,8 +4,8 @@ import (
 	"fmt"
 )
 
-//Extensive compare of scalar values
-//Will do a compare of the scalareExpr supporting the following operands: '==', '!=', '>=','>','<=','<'
+// Extensive compare of scalar values
+// Will do a compare of the scalareExpr supporting the following operands: '==', '!=', '>=','>','<=','<'
 func compare(env *Environment, operand string, l *ScalarExpr, r *ScalarExpr) (Expression, error) {
 
 	if r.Value() == nil || r.Value() == env.Null() || l.Value() == nil || l.Value() == env.Null() {
@@ -61,7 +61,7 @@ func compare(env *Environment, operand string, l *ScalarExpr, r *ScalarExpr) (Ex
 				}
 				return env.False(), nil
 			default:
-				return env.False(), fmt.Errorf("Operand not supported: %s", operand)
+				return env.False(), fmt.Errorf("operand not supported: %s", operand)
 			}
 		}
 
@@ -102,7 +102,7 @@ func compare(env *Environment, operand string, l *ScalarExpr, r *ScalarExpr) (Ex
 				return env.False(), nil
 
 			default:
-				return env.False(), fmt.Errorf("Operand not supported: %s", operand)
+				return env.False(), fmt.Errorf("operand not supported: %s", operand)
 			}
 		}
 	case uint:
@@ -142,7 +142,7 @@ func compare(env *Environment, operand string, l *ScalarExpr, r *ScalarExpr) (Ex
 				return env.False(), nil
 
 			default:
-				return env.False(), fmt.Errorf("Operand not supported: %s", operand)
+				return env.False(), fmt.Errorf("operand not supported: %s", operand)
 			}
 		}
 	case int64:
@@ -182,7 +182,7 @@ func compare(env *Environment, operand string, l *ScalarExpr, r *ScalarExpr) (Ex
 				return env.False(), nil
 
 			default:
-				return env.False(), fmt.Errorf("Operand not supported: %s", operand)
+				return env.False(), fmt.Errorf("operand not supported: %s", operand)
 			}
 		}
 	case uint64:
@@ -222,7 +222,7 @@ func compare(env *Environment, operand string, l *ScalarExpr, r *ScalarExpr) (Ex
 				return env.False(), nil
 
 			default:
-				return env.False(), fmt.Errorf("Operand not supported: %s", operand)
+				return env.False(), fmt.Errorf("operand not supported: %s", operand)
 			}
 		}
 	case float32:
@@ -262,7 +262,7 @@ func compare(env *Environment, operand string, l *ScalarExpr, r *ScalarExpr) (Ex
 				return env.False(), nil
 
 			default:
-				return env.False(), fmt.Errorf("Operand not supported: %s", operand)
+				return env.False(), fmt.Errorf("operand not supported: %s", operand)
 			}
 		}
 	case float64:
@@ -302,12 +302,12 @@ func compare(env *Environment, operand string, l *ScalarExpr, r *ScalarExpr) (Ex
 				return env.False(), nil
 
 			default:
-				return env.False(), fmt.Errorf("Operand not supported: %s", operand)
+				return env.False(), fmt.Errorf("operand not supported: %s", operand)
 			}
 		}
 
 	default:
-		return env.False(), fmt.Errorf("Scalar datatype not supported: %T", t)
+		return env.False(), fmt.Errorf("scalar datatype not supported: %T", t)
 	}
 	return env.False(), nil
 }
