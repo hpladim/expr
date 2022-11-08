@@ -6,38 +6,26 @@ import (
 	"strings"
 )
 
-/* Expression BNF
-* ==============
-* expr			::=		condExpr
-* condExpr		::=		orExpr['?' expr ':' expr]
-* orExpr		::= 	andExpr['||' orExpr]
-* andExpr		::=		cmpExpr['&&' andExpr]
-* cmpExpr		::=		concatExpr['==', concatExpr]
-* concatExpr	::=		atom ('+' concatExpr)*
-* atom			::=		(text | symbol | subexpr)
-* symbol		::=		ident[funcall]['.' symbol]
-* funcall		::=		'(' [arglist] ')'
-* arglist		::=		expr(',' expr) *
-* subexpr		::=		'(' expr ')'
-* arrayexpr		::=		'[' arglist ']'
- */
-
-// Parser parses
+// Parser parses the input string and returns an expression three
+// in a hierarchy according to this BNF:
+//
+//	expr		::=		condExpr
+//	condExpr	::=		orExpr['?' expr ':' expr]
+//	orExpr		::=		andExpr['||' orExpr]
+//	andExpr		::=		cmpExpr['&&' andExpr]
+//	cmpExpr		::=		concatExpr['==', concatExpr]
+//	concatExpr	::=		atom ('+' concatExpr)*
+//	atom		::=		(text | symbol | subexpr)
+//	symbol		::=		ident[funcall]['.' symbol]
+//	funcall		::=		'(' [arglist] ')'
+//	arglist		::=		expr(',' expr) *
+//	subexpr		::=		'(' expr ')'
+//	arrayexpr	::=		'[' arglist ']'
 type Parser struct {
 }
 
 func newParser() Parser {
 	return *new(Parser)
-}
-
-func compareOp(operand string) bool {
-
-	switch operand {
-	case "==", "!=", ">=", "<=":
-		return true
-	default:
-		return false
-	}
 }
 
 // Parse creates an parser which parser the input string
@@ -133,6 +121,16 @@ func parseAnd(lex *lexer) (Expression, error) {
 	}
 	lex.PushBack(t)
 	return expr, nil
+}
+
+func compareOp(operand string) bool {
+
+	switch operand {
+	case "==", "!=", ">=", "<=":
+		return true
+	default:
+		return false
+	}
 }
 
 // parseCmp parses the compare expression

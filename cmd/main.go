@@ -22,7 +22,6 @@ func exprTestM(str string, expectedValue interface{}) {
 		fmt.Printf("Parse failed: %v\n", ex)
 		fmt.Println(err.Error())
 		return
-
 	}
 	//
 	exEv, errEv := ex.Evaluate(env)
@@ -30,7 +29,6 @@ func exprTestM(str string, expectedValue interface{}) {
 		fmt.Printf("Eval failed: %v\n", exEv)
 		fmt.Println(err.Error())
 		return
-
 	}
 	if expectedValue != exEv.Value() {
 		fmt.Printf("Failed: %v\n", exEv)
@@ -40,19 +38,17 @@ func exprTestM(str string, expectedValue interface{}) {
 	fmt.Println("Test passed")
 }
 
+// Test basic functionality of the expr module.
 func main() {
-	//exprTestM("\"expr\" + \" \" + \"rules!\"", "expr rules!")
+
+	exprTestM("true && (true && true)", true)
+	exprTestM("true == true", true)
+	exprTestM("true != true", false)
+	exprTestM("false != true", true)
+	exprTestM("false == true", false)
+	exprTestM("true != false", true)
+	exprTestM("true == false", false)
+	exprTestM("true && false", true)
+	exprTestM("true && false", true)
 	exprTestM("\"lunch\" in [\"breakfast\", \"lunch\", \"dinner\",\"supper\"}", true)
-	//exprTestM("\"lunch\"", "lunch")
-
-	/*	exprTestM("true && (true && true)", true)
-			exprTestM("true == true", true)
-		  	exprTestM("true != true", false)
-		  	exprTestM("false != true", true)
-		  	exprTestM("false == true", false)
-		  	exprTestM("true != false", true)
-		  	exprTestM("true == false", false)
-		  	exprTestM("true && false", true)
-		  	exprTestM("true && false", true) */
-
 }
