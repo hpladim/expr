@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-//Print is a Builtin expression for simple print to console
+// Print is a built-in expression for simple print to console
 func Print(env *Environment, args []Expression) (Expression, error) {
 	for _, a := range args {
 		fmt.Printf("%s", a)

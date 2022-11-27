@@ -9,8 +9,8 @@ import (
 
 const eof = -1
 
-//stateFunc is defined to handle implementation of the different tokentypes.
-//See token lexing below
+// stateFunc is defined to handle implementation of the different tokentypes.
+// See token lexing below
 type stateFunc func(*lexer) stateFunc
 
 // lexer functions similarly to Rob Pike's discussion
@@ -27,7 +27,7 @@ type lexer struct {
 	tokenStack tokenStack
 }
 
-//newLexer creates and returns a lexer ready to parse the given input
+// newLexer creates and returns a lexer ready to parse the given input
 func newLexer(includeWS bool, in string) *lexer {
 	l := lexer{
 		input:      in,
@@ -72,6 +72,8 @@ func (l *lexer) next() rune {
 }
 
 // peek returns but does not consume the next rune in the input.
+//
+//lint:ignore U1000 Ignore unused function temporarily for debugging
 func (l lexer) peek() rune {
 	r := l.next()
 	l.backup()
@@ -253,7 +255,7 @@ func (l *lexer) scanNumber() (interface{}, error) {
 	}
 	if l.accept(".") {
 		l.eat(digits)
-		return strconv.ParseFloat(l.Current(), 2)
+		return strconv.ParseFloat(l.Current(), 64)
 	}
 	return strconv.ParseInt(l.Current(), 10, 64)
 }
@@ -339,10 +341,10 @@ type Token struct {
 	Start   int
 }
 
-//TokenType is the different tokentypes provided by
+// TokenType is the different tokentypes provided by
 type TokenType int
 
-//Tokentypes
+// Tokentypes
 const (
 	ErrorTok TokenType = iota
 	EoFTok
@@ -385,6 +387,7 @@ func (s *tokenStack) pop() *Token {
 	return &n.t
 }
 
+//lint:ignore U1000 Ignore unused function temporarily for debugging
 func (s *tokenStack) clear() {
 	s.start = nil
 }
