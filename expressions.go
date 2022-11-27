@@ -770,8 +770,7 @@ func (e *ScopedFuncCallExpr) String() string {
 // Used for extending the environment with new functions
 type NativeCallBack func(env *Environment, args []Expression) (Expression, error)
 
-// NativeFunctionExpr is a expression holding a native! function and its arguments
-// Fantastic stuff
+// NativeFunctionExpr is a expression holding a native function and its arguments
 type NativeFunctionExpr struct {
 	name   string
 	native NativeCallBack

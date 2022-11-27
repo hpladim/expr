@@ -72,6 +72,8 @@ func (l *lexer) next() rune {
 }
 
 // peek returns but does not consume the next rune in the input.
+//
+//lint:ignore U1000 Ignore unused function temporarily for debugging
 func (l lexer) peek() rune {
 	r := l.next()
 	l.backup()
@@ -385,6 +387,7 @@ func (s *tokenStack) pop() *Token {
 	return &n.t
 }
 
+//lint:ignore U1000 Ignore unused function temporarily for debugging
 func (s *tokenStack) clear() {
 	s.start = nil
 }

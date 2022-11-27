@@ -48,12 +48,10 @@ func parseExpr(lex *lexer) (Expression, error) {
 }
 
 func parseCond(lex *lexer) (Expression, error) {
-
 	expr, err := parseOr(lex)
 	if err != nil {
 		return expr, err
 	}
-
 	t, fini := lex.NextToken()
 	if fini || t.Type == EoFTok {
 		return expr, nil
@@ -70,6 +68,9 @@ func parseCond(lex *lexer) (Expression, error) {
 			return &cond, err
 		}
 		cond.right, err = parseExpr(lex)
+		if err != nil {
+			return expr, err
+		}
 		expr = &cond
 
 	} else {
@@ -124,7 +125,6 @@ func parseAnd(lex *lexer) (Expression, error) {
 }
 
 func compareOp(operand string) bool {
-
 	switch operand {
 	case "==", "!=", ">=", "<=":
 		return true
@@ -196,7 +196,6 @@ func parseConcat(lex *lexer) (Expression, error) {
 }
 
 func parseAtom(lex *lexer) (Expression, error) {
-
 	t, fini := lex.NextToken()
 	if fini || t.Type == EoFTok {
 		return NewScalarExpr("", nil), nil
@@ -263,7 +262,6 @@ func parseArrayExpr(lex *lexer) (Expression, error) {
 }
 
 func parseScopedIdent(lex *lexer, t Token, scope *SymbolExpr) (Expression, error) {
-
 	ident := t.Literal
 	sym := NewSymbolExprWithScope(t.Literal, scope)
 	t, fini := lex.NextToken()

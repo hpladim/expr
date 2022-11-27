@@ -166,6 +166,7 @@ func (e *Environment) popStack() {
 	e.exStack.pop()
 }
 
+//lint:ignore U1000 Ignore unused function temporarily for debugging
 func (e *Environment) peek() (exFrame, error) {
 	return e.exStack.peek()
 }
