@@ -48,7 +48,6 @@ func NewEnvironment() *Environment {
 // - 'empty': expression that evaluates to an empty string
 // - 'print' expression in form print(args ... Expression) prints all arguments to console
 func (e *Environment) registerBuiltIns() error {
-
 	e.Set("null", NewScalarExprV(nil))
 	e.Set("true", NewScalarExprV(true))
 	e.Set("false", NewScalarExprV(false))
@@ -56,10 +55,8 @@ func (e *Environment) registerBuiltIns() error {
 	e.Lock("null", true)
 	e.Lock("false", true)
 	e.Lock("true", true)
-
 	//Native functions
 	e.RegisterFunction("print", Print)
-
 	return nil
 }
 
@@ -86,7 +83,6 @@ func (e *Environment) Empty() Expression {
 // RegisterFunction registers a native function in the Environment
 // Use this to Extend the Environment
 func (e *Environment) RegisterFunction(name string, callback NativeCallBack) {
-
 	e.Set(name, NewNativeFunctionExpr(name, callback))
 }
 
@@ -196,12 +192,10 @@ func (s *exStack) push(ef exFrame) {
 func (s *exStack) pop() (exFrame, error) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-
 	l := len(s.frm)
 	if l == 0 {
 		return exFrame{}, errors.New("Empty Stack")
 	}
-
 	res := s.frm[l-1]
 	s.frm = s.frm[:l-1]
 	return res, nil
@@ -210,12 +204,10 @@ func (s *exStack) pop() (exFrame, error) {
 func (s *exStack) peek() (exFrame, error) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-
 	l := len(s.frm)
 	if l == 0 {
 		return exFrame{}, errors.New("Empty Stack")
 	}
-
 	res := s.frm[l-1]
 	return res, nil
 }

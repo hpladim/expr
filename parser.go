@@ -30,7 +30,6 @@ func newParser() Parser {
 
 // Parse creates an parser which parser the input string
 // Remember to evaluate the returned expression in the prefered environment!
-// Enjoy!
 func Parse(input string) (Expression, error) {
 	p := newParser()
 	return p.Parse(input)
@@ -64,7 +63,7 @@ func parseCond(lex *lexer) (Expression, error) {
 		if err != nil {
 			return expr, err
 		}
-		if _, err := expect(lex, OperatorTok, ":"); err == nil {
+		if _, err := expect(lex, OperatorTok, ":"); err != nil {
 			return &cond, err
 		}
 		cond.right, err = parseExpr(lex)
@@ -74,7 +73,6 @@ func parseCond(lex *lexer) (Expression, error) {
 		expr = &cond
 
 	} else {
-
 		lex.PushBack(t)
 	}
 	return expr, nil
@@ -188,9 +186,7 @@ func parseConcat(lex *lexer) (Expression, error) {
 			return right, err
 		}
 		return NewConcatExpr(left, right), nil
-
 	}
-
 	lex.PushBack(t)
 	return left, nil
 }
@@ -246,7 +242,6 @@ func parseArrayExpr(lex *lexer) (Expression, error) {
 		if t.Type == OperatorTok && t.Literal == "]" {
 			return result, nil
 		}
-
 		lex.PushBack(t)
 		lele, err := parseExpr(lex)
 		if err != nil {
@@ -272,7 +267,6 @@ func parseScopedIdent(lex *lexer, t Token, scope *SymbolExpr) (Expression, error
 
 		t, err := expect(lex, IdentTok, "")
 		if err != nil {
-
 			return sym, err
 		}
 		return parseScopedIdent(lex, t, sym)
@@ -286,7 +280,6 @@ func parseScopedIdent(lex *lexer, t Token, scope *SymbolExpr) (Expression, error
 		return f, err
 	}
 	expectArg := true
-
 	t, fini = lex.NextToken()
 	if fini || t.Type == EoFTok {
 		return f, nil
@@ -301,25 +294,20 @@ func parseScopedIdent(lex *lexer, t Token, scope *SymbolExpr) (Expression, error
 			f.AddArg(a)
 		} else {
 			expect(lex, OperatorTok, ",")
-
 		}
 		t, fini = lex.NextToken()
 		if fini || t.Type == EoFTok {
 			return sym, nil
 		}
-
 		expectArg = !expectArg
-
 	}
 	t, fini = lex.NextToken()
 	if fini || t.Type == EoFTok {
 		return sym, nil
 	}
 	if t.Type == OperatorTok && t.Literal == "." {
-
 		t, err := expect(lex, IdentTok, "")
 		if err != nil {
-
 			return sym, err
 		}
 		return parseScopedIdent(lex, t, sym)
@@ -328,14 +316,12 @@ func parseScopedIdent(lex *lexer, t Token, scope *SymbolExpr) (Expression, error
 }
 
 func parseIdent(lex *lexer, t Token) (Expression, error) {
-
 	sym := NewSymbolExpr(t.Literal)
 	t, fini := lex.NextToken()
 	if fini || t.Type == EoFTok {
 		return sym, nil
 	}
 	if t.Type == OperatorTok && t.Literal == "." {
-
 		t, err := expect(lex, IdentTok, "")
 		if err != nil {
 			return sym, err
@@ -349,7 +335,6 @@ func parseIdent(lex *lexer, t Token) (Expression, error) {
 	f := NewFuncCallExpr()
 	expectArg := true
 	f.SetFunc(sym)
-
 	t, fini = lex.NextToken()
 	if fini || t.Type == EoFTok {
 		return f, nil
@@ -364,20 +349,17 @@ func parseIdent(lex *lexer, t Token) (Expression, error) {
 			f.AddArg(a)
 		} else {
 			expect(lex, OperatorTok, ",")
-
 		}
 		t, fini = lex.NextToken()
 		if fini || t.Type == EoFTok {
 			return sym, nil
 		}
 		expectArg = !expectArg
-
 	}
 	return f, nil
 }
 
 func expect(lex *lexer, tt TokenType, literal string) (Token, error) {
-
 	t, fini := lex.NextToken()
 	if fini || t.Type == EoFTok {
 		return t, nil

@@ -157,9 +157,9 @@ func (e *CondExpr) Evaluate(env *Environment) (Expression, error) {
 		return c, err
 	}
 	if c == nil || c == env.False() || c.Value() == nil || c.Value() == env.False() {
-		return e.left.Evaluate(env)
+		return e.right.Evaluate(env)
 	}
-	return e.right.Evaluate(env)
+	return e.left.Evaluate(env)
 }
 
 // Literal will provide a uniqe literal for the expression
@@ -560,7 +560,6 @@ func MatchI(txt string, ti int, pattern string, pi int) bool {
 		switch r {
 
 		case '*':
-
 			if pi == pl {
 				return true
 			}
@@ -568,16 +567,12 @@ func MatchI(txt string, ti int, pattern string, pi int) bool {
 				ti++
 			}
 			return (ti < tl)
-
 		case '?':
-
 			ti++
-
 		default:
 			if r != unicode.ToLower([]rune(txt)[ti]) {
 				return false
 			}
-
 			ti++
 		}
 	}
@@ -637,7 +632,7 @@ func (e *FuncCallExpr) GetArgs() []Expression {
 
 // Evaluate the expression
 func (e *FuncCallExpr) Evaluate(env *Environment) (Expression, error) {
-	args := make([]Expression, len(e.GetArgs()))
+	args := make([]Expression, 0, len(e.GetArgs()))
 	f, err := e.GetFunc().Evaluate(env)
 	if err != nil {
 		return f, err

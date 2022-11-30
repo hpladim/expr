@@ -97,7 +97,6 @@ func (l lexer) Current() string {
 // Emit will receive a token and push a new token with the current analyzed
 // value into the tokens channel.
 func (l *lexer) emit(tok Token, send bool) {
-
 	if send {
 		l.tokens <- tok
 	}
@@ -242,7 +241,6 @@ func (l *lexer) scanNumber() (interface{}, error) {
 			digits = chHEXDIGIT
 			l.eat(digits)
 			return strconv.ParseInt(l.Current(), 16, 64)
-
 		} else if l.accept("oO") {
 			digits = chOCTAL
 			l.eat(digits)
@@ -253,6 +251,7 @@ func (l *lexer) scanNumber() (interface{}, error) {
 			return strconv.ParseInt(l.Current(), 2, 64)
 		}
 	}
+	l.eat(digits)
 	if l.accept(".") {
 		l.eat(digits)
 		return strconv.ParseFloat(l.Current(), 64)

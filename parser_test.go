@@ -10,61 +10,58 @@ func TestParse(t *testing.T) {
 }
 
 func RunParseBinaryBoolTest(t *testing.T) {
-	RunExprTest("true == true", true, t)
-	RunExprTest("true == false", false, t)
-	RunExprTest("false == true", false, t)
-	RunExprTest("true != true", false, t)
-	RunExprTest("false != true", true, t)
-	RunExprTest("true != false", true, t)
-	RunExprTest("true && true", true, t)
-	RunExprTest("false && true", false, t)
-	RunExprTest("true || false", true, t)
-	RunExprTest("true || true", true, t)
-	RunExprTest("false || false", false, t)
+	RunExprTest(t, "true == true", true)
+	RunExprTest(t, "true == false", false)
+	RunExprTest(t, "false == true", false)
+	RunExprTest(t, "true != true", false)
+	RunExprTest(t, "false != true", true)
+	RunExprTest(t, "true != false", true)
+	RunExprTest(t, "true && true", true)
+	RunExprTest(t, "false && true", false)
+	RunExprTest(t, "true || false", true)
+	RunExprTest(t, "true || true", true)
+	RunExprTest(t, "false || false", false)
 	//With sub expressions
-	RunExprTest("true && (true && true)", true, t)
-	RunExprTest("true && (false && true)", false, t)
-	RunExprTest("(false || true) && (false || true)", true, t)
+	RunExprTest(t, "true && (true && true)", true)
+	RunExprTest(t, "true && (false && true)", false)
+	RunExprTest(t, "(false || true) && (false || true)", true)
+	//Conditional statements
+	RunExprTest(t, "false == true?true:false", false)
+	RunExprTest(t, "1 == 2?true:false", false)
+	//Conditional statement with sub expression
+	RunExprTest(t, "1 == 1?(true == true?true:false):false", true)
 }
 
 func RunParseStringTest(t *testing.T) {
-	RunExprTest("\"expr\" + \" \" + \"rules!\"", "expr rules!", t)
-	//TODO: This failes. Write lower level tests on lexer
+	//String concat test
+	RunExprTest(t, "\"expr\" + \" \" + \"rules!\"", "expr rules!")
 	//In Evaluates to bool
-	RunExprTest("\"lunch\" in [\"breakfast\", \"lunch\", \"dinner\", \"supper\"]", true, t)
+	RunExprTest(t, "\"lunch\" in [\"breakfast\", \"lunch\", \"dinner\", \"supper\"]", true)
 }
 
-func RunStringInListTest(t *testing.T) {
-	RunExprTest("\"expr\" + \" \" + \"rules!\"", "expr rules!", t)
+// Runs tests in a separate goroutine. Enables paralell testing.
+func RunExprTest(t *testing.T, testString string, expectedValue interface{}) {
+	t.Run(testString, func(t *testing.T) { exprTest(t, testString, expectedValue) })
 }
 
-func RunExprTest(testString string, expectedValue interface{}, t *testing.T) {
-	t.Run(testString, func(t *testing.T) { exprTest(testString, expectedValue, t) })
-}
-
-func exprTest(testString string, expectedValue interface{}, t *testing.T) {
+func exprTest(t *testing.T, testString string, expectedValue interface{}) {
 	//Step 1: Create environment
 	env := NewEnvironment()
-	//Step 2: optionally extend environment
-	//
-	//Step 3: Get parser
+	//Step 2: Get parser
 	parser := env.GetParser()
-
-	//Step 4: Parse the input
+	//Step 3: Parse the input
 	ex, err := parser.Parse(testString)
 	if err != nil {
 		t.Errorf("Parse failed: %v. \n\n Error: %s\n", ex, err.Error())
 		return
-
 	}
-	//Step 5: Evaluate the parsed text
+	//Step 4: Evaluate the parsed text
 	exEv, errEv := ex.Evaluate(NewEnvironment())
 	if errEv != nil {
-		t.Errorf("Eval failed:\n\n %v \n\n Evaluated to:\n\n %v \n\n Error: %s\n", ex, exEv, errEv.Error())
+		t.Errorf("Eval failed:\n\n %v \n\n Evaluated to:\n %v \n Error: %s\n", ex.Literal(), exEv, errEv.Error())
 		return
-
 	}
-	//Step 6: Check result
+	//Step 5: Check result
 	if expectedValue != exEv.Value() {
 		t.Errorf("Compare failed:\n\n %v \n\n Evaluated to:\n\n %v \n", ex, exEv.Value())
 		return
